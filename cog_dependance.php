@@ -36,6 +36,7 @@ $filename = "/var/www/cog_git_dependancies/cog_dependance.json";
 if(!file_exists($filename))
   exit($filename . " does not exists.\n");
 
+// Json
 $dep = file_get_contents($filename);
 $repos = json_decode($dep);
 
@@ -45,9 +46,12 @@ $option_single_branch = "";
 if(floatval($git_version) > 1.8) 
   $option_single_branch = "--single-branch ";
 
+
+
 $sudo = "sudo -u www-data ";
 $sudo_root = "sudo -u root ";
 $installed = 0;
+
 
 foreach ($repos->repositories as $repo) {
   if(empty($repo->version))
@@ -74,9 +78,9 @@ foreach ($repos->repositories as $repo) {
   // content will be copied in the right folder after, without
   // any git folder/file.
   $install_dir = "/usr/local/cog_dependancies/" . $repo_filename . "#" . $repo->version;
-  
   $repo->dir = $repo->path;
-  if($repo->use_folder == 'true')
+  
+  if($repo->use_folder == 'true') 
     $repo->dir .= '/' . $repo_filename;
 
   // Check if the .git folder exists
@@ -99,18 +103,20 @@ foreach ($repos->repositories as $repo) {
 
   if($argv[1] == "update" || $argv[1] == "upgrade") {
     if($repo->exists) {
-      $hasUpdate = exec('cd ' . $repo->dir . "\n" . $sudo . "git status -sb\n");
+      $hasUpdate = exec('cd ' . $install_dir . "\n" . $sudo_root . "git status -sb\n");
     }
     else {
       $hasUpdate = $repo->url . " is not cloned yet, but could be -> Run " . $argv[0] . " install\n";
     }
-    echo($repo_filename . " : version " . str_replace('## ', "", $hasUpdate) . " is up-to-date\n");
     
-    if($repo->exists && $argv[1] == "upgrade") {
-      if($hasUpdate != '## ' . $repo->version) {
+    if($hasUpdate != '## ' . $repo->version) {
+      if($repo->exists && $argv[1] == "upgrade") {        
         exec('cd ' . $repo->dir . "\n" . $sudo . "git pull\n");
-        echo($repo_filename . " : version " . str_replace('## ', "", $hasUpdate) . " has been updated\n");
+        echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\n");
       }
+    }
+    else {
+      echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " is up-to-date\n");
     }
   }
 }
