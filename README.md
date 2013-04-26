@@ -7,13 +7,29 @@ This script use a json file to get all needed repositories from git, and check f
 
 I recommand to install it on /var/www
 So, you will have two files :
-  /var/www/cog_dependance.php
-  /var/www/cog_dependance.json
+	/var/www/cog_dependance.php
+	/var/www/cog_dependance.json
 
 The Json file contains all the repositories with
 - url
 - version
 - path
+
+### Json
+
+Here is an example of a Json :
+
+	{
+		"repositories": [{
+			"url": "git://github.com/buymeasoda/soda-theme.git",
+			"version": "soda-v1",
+			"path" : "/tmp/plugins"
+		},{
+			"url": "git://github.com/buymeasoda/tmpl.git",
+			"version": "",
+			"path" : "/tmp/plugins"
+		]}
+	}
 
 ### URL
 
@@ -32,15 +48,15 @@ The path where you want to clone your repository.
 
 Simply run a command like :
 
-  php cog_dependance.php install
+	php cog_dependance.php install
 
 Will install all needed repositories in the Json (if the repo is not present yet).
 
-  php cog_dependance.php udpate
+	php cog_dependance.php udpate
 
 Will check for new version __(without install them)__
 *You can set a crontask to send you the result of this command each day/week/whatever.*
 
-  php cog_dependance.php upgrade
+	php cog_dependance.php upgrade
 
 Will install any update.
