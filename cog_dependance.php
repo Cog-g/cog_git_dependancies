@@ -32,7 +32,7 @@ define("DEBUG", true);
 if(empty($argv[1]))
   exit("What do you want me to do ?!\n");
 
-$filename = "cog_dependance.json";
+$filename = "/var/www/cog_git_dependancies/cog_dependance.json";
 if(!file_exists($filename))
   exit($filename . " does not exists.\n");
 
