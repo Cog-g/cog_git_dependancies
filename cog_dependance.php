@@ -23,7 +23,7 @@
 **                               the content directly in the path.
 ** @optional  : -> git 1.8 to use the single branch clone option.
 ** @licence   : MIT
-** @todo      : Self-update, a "script_to_lauch" parameter to set a script to launch after 
+** @todo      : a "script_to_lauch" parameter to set a script to launch after 
 **              the installation of the repo.
 */
 
@@ -58,6 +58,9 @@ foreach ($repos->repositories as $repo) {
     $repo->version  = "master";
 
   $repo->exists = false;
+
+  if($argv[1] == "update")
+    echo("\nChecking : " . $repo->name);
   
   if(!empty($repo->name)) {
     $repo_filename = $repo->name;
@@ -90,13 +93,12 @@ foreach ($repos->repositories as $repo) {
   // If the argument is INSTALL
   if(!$repo->exists && $argv[1] == "install") {
     // Will clone the soda-v1 branch directly into /tmp/plugin (instead of soda-theme folder).
-    $clone = exec($sudo . 'git clone -b ' . $repo->version . ' ' . $option_single_branch . $repo->url . ' ' . $install_dir . "\n");
+    $clone = exec($sudo_root . 'git clone -b ' . $repo->version . ' ' . $option_single_branch . $repo->url . ' ' . $install_dir . "\n");
 
     // copy the file, without any git folder/file and remove README.*
     echo("Moving to " . $repo->dir . "\n");
-    echo exec( ( ($repo->sudo_root == "true") ? $sudo_root : $sudo ) 
-                    . "cp " . $install_dir . "/* " . $repo->dir . "/\nrm " 
-                    . $repo->dir . "/README*");
+    echo exec( $sudo_root . "cp " . $install_dir . "/* " . $repo->dir . "/\nrm " 
+                          . $repo->dir . "/README*");
     $installed++; // one more.
   }
 
@@ -106,17 +108,18 @@ foreach ($repos->repositories as $repo) {
       $hasUpdate = exec('cd ' . $install_dir . "\n" . $sudo_root . "git status -sb\n");
     }
     else {
-      $hasUpdate = $repo->url . " is not cloned yet, but could be -> Run " . $argv[0] . " install\n";
+      $hasUpdate = $repo_filename . " is not cloned yet, but could be\n -> Run : php " . $argv[0] . " install\n";
+      echo($hasUpdate);
     }
     
     if($hasUpdate != '## ' . $repo->version) {
       if($repo->exists && $argv[1] == "upgrade") {        
-        exec('cd ' . $repo->dir . "\n" . $sudo . "git pull\n");
+        exec('cd ' . $repo->dir . "\n" . $sudo_root . "git pull\n");
         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\n");
       }
     }
     else {
-      echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " is up-to-date\n");
+      echo(" #" . str_replace('## ', "", $hasUpdate) . " is up-to-date.\n");
     }
   }
 }
