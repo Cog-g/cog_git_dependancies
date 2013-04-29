@@ -136,7 +136,7 @@ foreach ($repos->repositories as $repo) {
         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\n");
       }
       elseif($repo->exists) {
-         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\n         -> Run : php " . $argv[0] . " upgrade\n\n");
+        echo($repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\n         -> Run : php " . $argv[0] . " upgrade\n\n");
       }
     }
     else {
