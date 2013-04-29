@@ -115,7 +115,10 @@ foreach ($repos->repositories as $repo) {
 
   if($argv[1] == "update" || $argv[1] == "upgrade") {
     if($repo->exists) {
-      $hasUpdate = exec('cd ' . $install_dir . "\n" . $sudo_root . "git status -sb\n");
+      //$hasUpdate = exec('cd ' . $install_dir . "\n" . $sudo_root . "git status -sb\n");
+      $hasUpdate = exec('cd ' . $install_dir 
+                          . "\n" . $sudo_root . "git remote update"
+                          . "\n" . $sudo_root . "git status -sb\n");
     }
     else {
       $hasUpdate = $repo_filename . " is not cloned yet, but could be\n -> Run : php " . $argv[0] . " install\n";
@@ -124,8 +127,11 @@ foreach ($repos->repositories as $repo) {
     
     if($hasUpdate != '## ' . $repo->version) {
       if($repo->exists && $argv[1] == "upgrade") {        
-        exec('cd ' . $repo->dir . "\n" . $sudo_root . "git pull\n");
+        exec('cd ' . $install_dir . "\n" . $sudo_root . "git pull\n");
         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\n");
+      }
+      else {
+         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\n -> Run : php " . $argv[0] . " upgrade\n");
       }
     }
     else {
