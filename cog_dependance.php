@@ -5,7 +5,7 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.5.2
+** @version   : 1.5.3
 ** @usage     : php cog_dependance.php argv
 ** @param     : $argv[1]
 **                = install > will install new repo only.
@@ -26,6 +26,7 @@
 ** @todo      : a "script_to_lauch" parameter to set a script to launch after 
 **              the installation of the repo.
 ** @changelog :
+**              1.5.3 : . Added a changed value to copy new files to the dir if it is needed.
 **              1.5.2 : . Fixed some right access.
 **              1.5.1 : . Added the forgoten params to copy "-ipr"
 **                      . Check for writing permission to the needed folder
@@ -55,6 +56,7 @@ if(floatval($git_version) > 1.8)
 $sudo = "sudo -u www-data ";
 $sudo_root = "sudo -u root ";
 $installed = 0;
+$changed = false;
 
 
 foreach ($repos->repositories as $repo) {
@@ -106,11 +108,7 @@ foreach ($repos->repositories as $repo) {
     // Will clone the soda-v1 branch directly into /tmp/plugin (instead of soda-theme folder).
     $clone = exec($sudo . 'git clone -b ' . $repo->version . ' ' . $option_single_branch . $repo->url . ' ' . $install_dir . "\n");
 
-    // copy the file, without any git folder/file and remove README.*
-    echo("Moving to " . $repo->dir . "\n");
-    echo exec( $sudo . "cp -ipr" . $install_dir . "/* " . $repo->dir . "/"
-      . "\nrm -f " . $repo->dir . "/README*"
-      . "\nrm -fR " . $repo->dir . "/.git");
+    $changed = true;
     $installed++; // one more.
   }
 
@@ -133,6 +131,7 @@ foreach ($repos->repositories as $repo) {
     if($hasUpdate != '## ' . $repo->version) {
       if($repo->exists && $argv[1] == "upgrade") {        
         exec('cd ' . $install_dir . "\n" . $sudo_root . "git pull\n");
+        $changed = true;
         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\n");
       }
       elseif($repo->exists) {
@@ -143,6 +142,14 @@ foreach ($repos->repositories as $repo) {
       echo(" #" . str_replace('## ', "", $hasUpdate) . " is up-to-date.\n");
     }
   }
+}
+
+if($changed) {
+  // copy the file, without any git folder/file and remove README.*
+  echo("Moving to " . $repo->dir . "\n");
+  echo exec( $sudo . "cp -ipr" . $install_dir . "/* " . $repo->dir . "/"
+    . "\nrm -f " . $repo->dir . "/README*"
+    . "\nrm -fR " . $repo->dir . "/.git");
 }
 
 if($argv[1] == "install" && $installed == 0)
