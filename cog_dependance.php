@@ -65,8 +65,10 @@ foreach ($repos->repositories as $repo) {
   if($argv[1] == "update")
     echo("\nChecking : " . $repo->name);
 
-  if(!file_exists($repo->path) || !is_writable($repo->path))
-    exit($repo->path . " is not writable\n");
+  if(!file_exists($repo->path) || !is_writable($repo->path)) {
+    echo($repo->path . " is not writable\n");
+    continue;
+  }
 
   
   if(!empty($repo->name)) {
