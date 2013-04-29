@@ -5,7 +5,7 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.5
+** @version   : 1.5.1
 ** @usage     : php cog_dependance.php argv
 ** @param     : $argv[1]
 **                = install > will install new repo only.
@@ -25,6 +25,9 @@
 ** @licence   : MIT
 ** @todo      : a "script_to_lauch" parameter to set a script to launch after 
 **              the installation of the repo.
+** @changelog :
+**              1.5.1 : . Added the forgoten params to copy "-ipr"
+**                      . Check for writing permission to the needed folder
 */
 
 define("DEBUG", true);
@@ -61,6 +64,10 @@ foreach ($repos->repositories as $repo) {
 
   if($argv[1] == "update")
     echo("\nChecking : " . $repo->name);
+
+  if(!file_exists($repo->path) || !is_writable($repo->path))
+    exit($repo->path . " is not writable\n");
+
   
   if(!empty($repo->name)) {
     $repo_filename = $repo->name;
@@ -97,7 +104,7 @@ foreach ($repos->repositories as $repo) {
 
     // copy the file, without any git folder/file and remove README.*
     echo("Moving to " . $repo->dir . "\n");
-    echo exec( $sudo_root . "cp " . $install_dir . "/* " . $repo->dir . "/\nrm " 
+    echo exec( $sudo_root . "cp -ipr" . $install_dir . "/* " . $repo->dir . "/\nrm " 
                           . $repo->dir . "/README*");
     $installed++; // one more.
   }

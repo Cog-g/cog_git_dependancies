@@ -14,6 +14,9 @@ The Json file contains all the repositories with
 - url
 - version
 - path
+- path
+- sudo_root
+- use_folder
 
 ### Json
 
@@ -21,32 +24,53 @@ Here is an example of a Json :
 
 	{
 		"repositories": [{
+	    "name" : "cog_git_dependancies",
+	    "url": "git://github.com/Cog-g/cog_git_dependancies.git",
+	    "version": "master",
+	    "path" : "/var/www",
+	    "sudo_root" : "false",
+	    "use_folder" : "true"
+	  },{
+	    "name" : "soda",
 			"url": "git://github.com/buymeasoda/soda-theme.git",
 			"version": "soda-v1",
-			"path" : "/tmp/plugins"
+			"path" : "/tmp/plugins",
+    	"sudo_root" : "false",
+    	"use_folder" : "true"
 		},{
+	    "name" : "tmpl",
 			"url": "git://github.com/buymeasoda/tmpl.git",
 			"version": "",
-			"path" : "/tmp/plugins"
+			"path" : "/tmp/plugins",
+    	"sudo_root" : "false",
+    	"use_folder" : "true"
 		]}
 	}
 
 ### URL
 
-It is the url of the repository.
+(string) It is the url of the repository.
 
 ### Version
 
-Could be a branch or a tag. If it is empty, master branch will be used.
+(void|string) Could be a branch or a tag. If it is empty, master branch will be used.
 
 ### Path
 
-The path where you want to clone your repository.
+(string) The path where you want to clone your repository.
+
+### Sudo_root (deprecated)
+
+(bool) not used anymore.
+
+### use_folder
+
+(bool) Tells if the folder of the repo should be use or, if the files needs to be directly copied to the specified folder.
 
 
 ## Run
 
-Simply run a command like :
+__As root,__ simply run a command like :
 
 	php cog_dependance.php install
 
@@ -57,6 +81,6 @@ Will install all needed repositories in the Json (if the repo is not present yet
 Will check for new version __(without install them)__
 *You can set a crontask to send you the result of this command each day/week/whatever.*
 
-	php cog_dependance.php upgrade
+	(_As root_) php cog_dependance.php upgrade
 
 Will install any update.
