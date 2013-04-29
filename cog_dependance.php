@@ -5,7 +5,7 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.5.1
+** @version   : 1.5.2
 ** @usage     : php cog_dependance.php argv
 ** @param     : $argv[1]
 **                = install > will install new repo only.
@@ -26,11 +26,12 @@
 ** @todo      : a "script_to_lauch" parameter to set a script to launch after 
 **              the installation of the repo.
 ** @changelog :
+**              1.5.2 : . Fixed some right access.
 **              1.5.1 : . Added the forgoten params to copy "-ipr"
 **                      . Check for writing permission to the needed folder
 */
 
-define("DEBUG", true);
+define("DEBUG", false);
 
 if(empty($argv[1]))
   exit("What do you want me to do ?!\n");
@@ -63,7 +64,7 @@ foreach ($repos->repositories as $repo) {
   $repo->exists = false;
 
   if($argv[1] == "update")
-    echo("\nChecking : " . $repo->name);
+    echo("Checking : " . $repo->name . " ");
 
   if(!file_exists($repo->path) || !is_writable($repo->path)) {
     echo($repo->path . " is not writable\n");
@@ -101,12 +102,13 @@ foreach ($repos->repositories as $repo) {
 
   // If the argument is INSTALL
   if(!$repo->exists && $argv[1] == "install") {
+    echo('Installing ' . $repo->name . "#" . $repo->version . "\n");
     // Will clone the soda-v1 branch directly into /tmp/plugin (instead of soda-theme folder).
-    $clone = exec($sudo_root . 'git clone -b ' . $repo->version . ' ' . $option_single_branch . $repo->url . ' ' . $install_dir . "\n");
+    $clone = exec($sudo . 'git clone -b ' . $repo->version . ' ' . $option_single_branch . $repo->url . ' ' . $install_dir . "\n");
 
     // copy the file, without any git folder/file and remove README.*
     echo("Moving to " . $repo->dir . "\n");
-    echo exec( $sudo_root . "cp -ipr" . $install_dir . "/* " . $repo->dir . "/"
+    echo exec( $sudo . "cp -ipr" . $install_dir . "/* " . $repo->dir . "/"
       . "\nrm -f " . $repo->dir . "/README*"
       . "\nrm -fR " . $repo->dir . "/.git");
     $installed++; // one more.
@@ -116,12 +118,15 @@ foreach ($repos->repositories as $repo) {
   if($argv[1] == "update" || $argv[1] == "upgrade") {
     if($repo->exists) {
       //$hasUpdate = exec('cd ' . $install_dir . "\n" . $sudo_root . "git status -sb\n");
-      $hasUpdate = exec('cd ' . $install_dir 
-                          . "\n" . $sudo_root . "git remote update"
-                          . "\n" . $sudo_root . "git status -sb\n");
+      if(DEBUG) {
+        echo ("\ncd " . $install_dir . " (with " . $sudo . ")\n");
+      }
+      $hasUpdate = exec('cd ' . $install_dir . "\n" .
+                          $sudo . "git remote update" . "\n" .
+                          $sudo . "git status -sb\n");
     }
     else {
-      $hasUpdate = $repo_filename . " is not cloned yet, but could be\n -> Run : php " . $argv[0] . " install\n";
+      $hasUpdate = " is not cloned yet, but could be \n          -> Run : php " . $argv[0] . " install\n\n";
       echo($hasUpdate);
     }
     
@@ -130,8 +135,8 @@ foreach ($repos->repositories as $repo) {
         exec('cd ' . $install_dir . "\n" . $sudo_root . "git pull\n");
         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\n");
       }
-      else {
-         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\n -> Run : php " . $argv[0] . " upgrade\n");
+      elseif($repo->exists) {
+         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\n         -> Run : php " . $argv[0] . " upgrade\n\n");
       }
     }
     else {
