@@ -163,7 +163,7 @@ foreach ($repos->repositories as $repo) {
   if( $changed || (!empty($argv[2]) && ( $argv[2] == $repo->name || $argv[2] == "all" ) ) ) {
     // copy the file, without any git folder/file and remove README.*
     exec($sudo_root . "chown -R www-data " . $install_dir . "\n");
-    echo(exec("echo \"Copying from " . $install_dir . " to " . $repo->dir . "\" "));
+    echo(exec("echo \"Copying from " . $install_dir . " to " . $repo->dir . "\"\n "));
     echo exec( $sudo_root . "cp -pr " . $install_dir . "/* " . $repo->dir . "/"
       . "\nrm -f " . $repo->dir . "/README*"
       . "\nrm -fR " . $repo->dir . "/.git");
