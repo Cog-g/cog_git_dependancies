@@ -5,12 +5,14 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.5.3
-** @usage     : php cog_dependance.php argv
+** @version   : 1.5.4
+** @usage     : php cog_dependance.php argv1 [argv2]
 ** @param     : $argv[1]
 **                = install > will install new repo only.
 **                = update  > will *check* for new version.
 **                = upgrade > will pull all repo.
+**                = copy > will force the copy of the argv[2] to its destination folder.
+**              $argv[2] : (optionnal) with argv1 copy, tells which one to copy, or "all" to copy each.
 ** @required  : -> a cog_dependance.json with a "repositories" array contening all
 **               parameters for each one :
 **                  name : the name of the repo. It will be use as folder name.
@@ -26,6 +28,7 @@
 ** @todo      : a "script_to_lauch" parameter to set a script to launch after 
 **              the installation of the repo.
 ** @changelog :
+**              1.5.4 : . Added copy parameter to force a new copy.
 **              1.5.3 : . Added a changed value to copy new files to the dir if it is needed.
 **              1.5.2 : . Fixed some right access.
 **              1.5.1 : . Added the forgoten params to copy "-ipr"
@@ -36,6 +39,9 @@ define("DEBUG", false);
 
 if(empty($argv[1]))
   exit("What do you want me to do ?!\n");
+
+if($argv[1] == "copy" && empty($argv[2]))
+  exit("What do you want me to copy ?!\n");
 
 $filename = "/var/www/cog_git_dependancies/cog_dependance.json";
 if(!file_exists($filename))
@@ -102,7 +108,11 @@ foreach ($repos->repositories as $repo) {
   if(file_exists($install_dir . "/.git"))
     $repo->exists = true;
 
+  //
+  //
   // If the argument is INSTALL
+  //
+  //
   if(!$repo->exists && $argv[1] == "install") {
     echo('Installing ' . $repo->name . "#" . $repo->version . "\n");
     // Will clone the soda-v1 branch directly into /tmp/plugin (instead of soda-theme folder).
@@ -112,7 +122,11 @@ foreach ($repos->repositories as $repo) {
     $installed++; // one more.
   }
 
-
+  //
+  //
+  // If the argument is UPDATE | UPGRADE
+  //
+  //
   if($argv[1] == "update" || $argv[1] == "upgrade") {
     if($repo->exists) {
       //$hasUpdate = exec('cd ' . $install_dir . "\n" . $sudo_root . "git status -sb\n");
@@ -121,7 +135,8 @@ foreach ($repos->repositories as $repo) {
       }
       $hasUpdate = exec('cd ' . $install_dir . "\n" .
                           $sudo . "git remote update" . "\n" .
-                          $sudo . "git status -sb\n");
+                          $sudo . "git status -sb\n" .
+                          $sudo_root . "chown -R www-data " . $install_dir . "\n");
     }
     else {
       $hasUpdate = " is not cloned yet, but could be \n          -> Run : php " . $argv[0] . " install\n\n";
@@ -131,7 +146,7 @@ foreach ($repos->repositories as $repo) {
     if($hasUpdate != '## ' . $repo->version) {
       if($repo->exists && $argv[1] == "upgrade") {        
         exec('cd ' . $install_dir . "\n" . 
-                $sudo_root . "git pull\n" .
+                $sudo . "git pull\n" .
                 $sudo_root . "chown -R www-data " . $install_dir . "\n");
         $changed = true;
         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\n");
@@ -145,11 +160,11 @@ foreach ($repos->repositories as $repo) {
     }
   }
 
-  if(!$changed) {
+  if( $changed || (!empty($argv[2]) && ( $argv[2] == $repo->name || $argv[2] == "all" ) ) ) {
     // copy the file, without any git folder/file and remove README.*
     exec($sudo_root . "chown -R www-data " . $install_dir . "\n");
-    echo(exec("echo \"Copying to " . $repo->dir . "\"\n"));
-    echo exec( $sudo . "cp -ipr" . $install_dir . "/* " . $repo->dir . "/"
+    echo(exec("echo \"Copying from " . $install_dir . " to " . $repo->dir . "\" "));
+    echo exec( $sudo . "cp -pr " . $install_dir . "/* " . $repo->dir . "/"
       . "\nrm -f " . $repo->dir . "/README*"
       . "\nrm -fR " . $repo->dir . "/.git");
   }
