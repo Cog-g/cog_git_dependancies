@@ -5,14 +5,14 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.5.4
+** @version   : 1.5.5
 ** @usage     : php cog_dependance.php argv1 [argv2]
 ** @param     : $argv[1]
 **                = install > will install new repo only.
 **                = update  > will *check* for new version.
 **                = upgrade > will pull all repo.
 **                = copy > will force the copy of the argv[2] to its destination folder.
-**              $argv[2] : (optionnal) with argv1 copy, tells which one to copy, or "all" to copy each.
+**              $argv[2] : (optionnal) tells which repositorie, or "all".
 ** @required  : -> a cog_dependance.json with a "repositories" array contening all
 **               parameters for each one :
 **                  name : the name of the repo. It will be use as folder name.
@@ -28,6 +28,7 @@
 ** @todo      : a "script_to_lauch" parameter to set a script to launch after 
 **              the installation of the repo.
 ** @changelog :
+**              1.5.5 : . Added a params to specify a repo to upgrade/install/copy/check
 **              1.5.4 : . Added copy parameter to force a new copy.
 **              1.5.3 : . Added a changed value to copy new files to the dir if it is needed.
 **              1.5.2 : . Fixed some right access.
@@ -42,6 +43,9 @@ if(empty($argv[1]))
 
 if($argv[1] == "copy" && empty($argv[2]))
   exit("What do you want me to copy ?!\n");
+
+if(empty($argv[2]))
+  $argv[2] = 'all';
 
 $filename = "/var/www/cog_git_dependancies/cog_dependance.json";
 if(!file_exists($filename))
@@ -62,10 +66,14 @@ if(floatval($git_version) > 1.8)
 $sudo = "sudo -u www-data ";
 $sudo_root = "sudo -u root ";
 $installed = 0;
-$changed = false;
 
 
 foreach ($repos->repositories as $repo) {
+  $changed = $thisOne = false;
+  
+  if($argv[2] == 'all' || $argv[2] = $repo->name)
+    $thisOne = true;
+
   if(empty($repo->version))
     $repo->version  = "master";
 
@@ -113,7 +121,7 @@ foreach ($repos->repositories as $repo) {
   // If the argument is INSTALL
   //
   //
-  if(!$repo->exists && $argv[1] == "install") {
+  if(!$repo->exists && $argv[1] == "install" && $thisOne ) {
     echo('Installing ' . $repo->name . "#" . $repo->version . "\n");
     // Will clone the soda-v1 branch directly into /tmp/plugin (instead of soda-theme folder).
     $clone = exec($sudo . 'git clone -b ' . $repo->version . ' ' . $option_single_branch . $repo->url . ' ' . $install_dir . "\n");
@@ -127,7 +135,7 @@ foreach ($repos->repositories as $repo) {
   // If the argument is UPDATE | UPGRADE
   //
   //
-  if($argv[1] == "update" || $argv[1] == "upgrade") {
+  if( ($argv[1] == "update" || $argv[1] == "upgrade" ) && $thisOne) {
     if($repo->exists) {
       //$hasUpdate = exec('cd ' . $install_dir . "\n" . $sudo_root . "git status -sb\n");
       if(DEBUG) {
