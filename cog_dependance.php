@@ -106,8 +106,9 @@ foreach ($repos->repositories as $repo) {
 
     // copy the file, without any git folder/file and remove README.*
     echo("Moving to " . $repo->dir . "\n");
-    echo exec( $sudo_root . "cp -ipr" . $install_dir . "/* " . $repo->dir . "/\nrm " 
-                          . $repo->dir . "/README*");
+    echo exec( $sudo_root . "cp -ipr" . $install_dir . "/* " . $repo->dir . "/"
+      . "\nrm -f " . $repo->dir . "/README*"
+      . "\nrm -fR " . $repo->dir . "/.git");
     $installed++; // one more.
   }
 
