@@ -130,7 +130,9 @@ foreach ($repos->repositories as $repo) {
     
     if($hasUpdate != '## ' . $repo->version) {
       if($repo->exists && $argv[1] == "upgrade") {        
-        exec('cd ' . $install_dir . "\n" . $sudo_root . "git pull\n");
+        exec('cd ' . $install_dir . "\n" . 
+                $sudo_root . "git pull\n" .
+                $sudo_root . "chown -R www-data " . $install_dir . "\n");
         $changed = true;
         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\n");
       }
@@ -142,15 +144,15 @@ foreach ($repos->repositories as $repo) {
       echo(" #" . str_replace('## ', "", $hasUpdate) . " is up-to-date.\n");
     }
   }
-}
 
-if($changed) {
-  // copy the file, without any git folder/file and remove README.*
-  exec($sudo_root . "chown -R www-data " . $install_dir . "\n");
-  echo("Copying to " . $repo->dir . "\n");
-  echo exec( $sudo . "cp -ipr" . $install_dir . "/* " . $repo->dir . "/"
-    . "\nrm -f " . $repo->dir . "/README*"
-    . "\nrm -fR " . $repo->dir . "/.git");
+  if(!$changed) {
+    // copy the file, without any git folder/file and remove README.*
+    exec($sudo_root . "chown -R www-data " . $install_dir . "\n");
+    echo(exec("echo \"Copying to " . $repo->dir . "\"\n"));
+    echo exec( $sudo . "cp -ipr" . $install_dir . "/* " . $repo->dir . "/"
+      . "\nrm -f " . $repo->dir . "/README*"
+      . "\nrm -fR " . $repo->dir . "/.git");
+  }
 }
 
 if($argv[1] == "install" && $installed == 0)
