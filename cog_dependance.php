@@ -146,7 +146,8 @@ foreach ($repos->repositories as $repo) {
 
 if($changed) {
   // copy the file, without any git folder/file and remove README.*
-  echo("Moving to " . $repo->dir . "\n");
+  exec($sudo_root . "chown -R www-data " . $install_dir . "\n");
+  echo("Copying to " . $repo->dir . "\n");
   echo exec( $sudo . "cp -ipr" . $install_dir . "/* " . $repo->dir . "/"
     . "\nrm -f " . $repo->dir . "/README*"
     . "\nrm -fR " . $repo->dir . "/.git");
