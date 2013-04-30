@@ -25,11 +25,8 @@
 **                               the content directly in the path.
 ** @optional  : -> git 1.8 to use the single branch clone option.
 ** @licence   : MIT
-** @todo      : - A "script_to_lauch" parameter to set a script to launch after 
-**                the installation of the repo.
-**              - The possibility to "inception" a Json call in the Json, like
-**                "json" : "/var/www/vhost/inception.com/" to catch 
-**                /var/www/vhost/inception.com/cog_dependance.json.
+** @todo      : a "script_to_lauch" parameter to set a script to launch after 
+**              the installation of the repo.
 ** @changelog :
 **              1.5.6 : . Fixed the copy, only if copy passed on argument or if there is any change.
 **              1.5.5 : . Added a params to specify a repo to upgrade/install/copy/check
@@ -151,7 +148,7 @@ foreach ($repos->repositories as $repo) {
                           $sudo_root . "chown -R www-data " . $install_dir . "\n");
     }
     else {
-      $hasUpdate = " is not cloned yet, but could be \n          -> Run : php " . $argv[0] . " install\n\n";
+      $hasUpdate = " is not cloned yet, but could be \n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
       echo($hasUpdate);
     }
     
@@ -164,7 +161,7 @@ foreach ($repos->repositories as $repo) {
         echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\n");
       }
       elseif($repo->exists) {
-        echo($repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\n         -> Run : php " . $argv[0] . " upgrade\n\n");
+        echo($repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
       }
     }
     else {
