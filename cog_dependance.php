@@ -5,7 +5,7 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.5.5
+** @version   : 1.5.6
 ** @usage     : php cog_dependance.php argv1 [argv2]
 ** @param     : $argv[1]
 **                = install > will install new repo only.
@@ -25,9 +25,13 @@
 **                               the content directly in the path.
 ** @optional  : -> git 1.8 to use the single branch clone option.
 ** @licence   : MIT
-** @todo      : a "script_to_lauch" parameter to set a script to launch after 
-**              the installation of the repo.
+** @todo      : - A "script_to_lauch" parameter to set a script to launch after 
+**                the installation of the repo.
+**              - The possibility to "inception" a Json call in the Json, like
+**                "json" : "/var/www/vhost/inception.com/" to catch 
+**                /var/www/vhost/inception.com/cog_dependance.json.
 ** @changelog :
+**              1.5.6 : . Fixed the copy, only if copy passed on argument or if there is any change.
 **              1.5.5 : . Added a params to specify a repo to upgrade/install/copy/check
 **              1.5.4 : . Added copy parameter to force a new copy.
 **              1.5.3 : . Added a changed value to copy new files to the dir if it is needed.
@@ -168,7 +172,7 @@ foreach ($repos->repositories as $repo) {
     }
   }
 
-  if( $changed || (!empty($argv[2]) && ( $argv[2] == $repo->name || $argv[2] == "all" ) ) ) {
+  if( $changed || ( !empty($argv[2]) && $argv[1] == "copy"  && ( $argv[2] == $repo->name || $argv[2] == "all" ) ) ) {
     // copy the file, without any git folder/file and remove README.*
     exec($sudo_root . "chown -R www-data " . $install_dir . "\n");
     echo(exec("echo \"Copying from " . $install_dir . " to " . $repo->dir . "\"\n "));
