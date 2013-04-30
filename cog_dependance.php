@@ -5,7 +5,7 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.5.6
+** @version   : 1.5.7
 ** @usage     : php cog_dependance.php argv1 [argv2]
 ** @param     : $argv[1]
 **                = install > will install new repo only.
@@ -28,6 +28,7 @@
 ** @todo      : a "script_to_lauch" parameter to set a script to launch after 
 **              the installation of the repo.
 ** @changelog :
+**              1.5.7 : . On copying, create the dir if not present.
 **              1.5.6 : . Fixed the copy, only if copy passed on argument or if there is any change.
 **              1.5.5 : . Added a params to specify a repo to upgrade/install/copy/check
 **              1.5.4 : . Added copy parameter to force a new copy.
@@ -72,7 +73,7 @@ $installed = 0;
 foreach ($repos->repositories as $repo) {
   $changed = $thisOne = false;
   
-  if($argv[2] == 'all' || $argv[2] = $repo->name)
+  if($argv[2] == 'all' || $argv[2] == $repo->name)
     $thisOne = true;
 
   if(empty($repo->version))
@@ -169,10 +170,28 @@ foreach ($repos->repositories as $repo) {
     }
   }
 
-  if( $changed || ( !empty($argv[2]) && $argv[1] == "copy"  && ( $argv[2] == $repo->name || $argv[2] == "all" ) ) ) {
+  $copy = false;
+  if($argv[1] == "copy") {
+    if( $thisOne ) {
+      //echo(exec("echo \"\nCopy argv2 = " . $argv[2] . " => \"\n"));
+      $copy = true;
+    }
+  }
+  elseif($changed) {
+    $copy = true;
+  }
+
+  if($copy) {
     // copy the file, without any git folder/file and remove README.*
     exec($sudo_root . "chown -R www-data " . $install_dir . "\n");
-    echo(exec("echo \"Copying from " . $install_dir . " to " . $repo->dir . "\"\n "));
+    
+    // Check if the directory exists or create it.
+    if(!file_exists($repo->dir)) {
+      mkdir($repo->dir, 0755);
+      exec($sudo_root . "chown -R www-data " . $repo->dir . "\n");
+    }
+
+    echo(exec("echo \"\nCopying from " . $install_dir . " to " . $repo->dir . "\"\n"));
     echo exec( $sudo_root . "cp -pr " . $install_dir . "/* " . $repo->dir . "/"
       . "\nrm -f " . $repo->dir . "/README*"
       . "\nrm -fR " . $repo->dir . "/.git");
