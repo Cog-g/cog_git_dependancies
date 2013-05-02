@@ -159,7 +159,7 @@ foreach ($repos->repositories as $repo) {
                           $sudo_root . "chown -R www-data " . $install_dir . "\n");
     }
     else {
-      $hasUpdate = " " . $skyblue . "is not cloned yet, but could be\033[39m \n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
+      $hasUpdate = $skyblue . "is not cloned yet, but could be\033[39m \n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
       echo($hasUpdate);
     }
     
@@ -172,7 +172,7 @@ foreach ($repos->repositories as $repo) {
         echo($skyblue . $repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\033[39m\n");
       }
       elseif($repo->exists) {
-        echo($red . $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\033[39m\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
+        echo($red . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\033[39m\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
       }
     }
     else {
