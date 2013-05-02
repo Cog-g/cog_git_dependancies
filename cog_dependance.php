@@ -50,9 +50,15 @@ if($argv[1] == "copy" && empty($argv[2]))
 if(empty($argv[2]))
   $argv[2] = 'all';
 
-$filename = "/var/www/cog_git_dependancies/cog_dependance.json";
 if(!file_exists($filename))
-  exit($filename . " does not exists.\n");
+
+$filename = "/var/www/cog_git_dependancies/cog_dependance2.json";
+if(!file_exists($filename)) {
+  echo( exec("touch " . $filename . "\n") );
+  exec("echo \"{ \"repositories\": [] }\" > " . $filename . "\n");
+}
+
+exit();
 
 echo(
 "\n********************************\n" .

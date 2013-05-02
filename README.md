@@ -7,8 +7,12 @@ This script use a json file to get all needed repositories from git, and check f
 
 I recommand to install it on /var/www
 So, you will have two files :
-	/var/www/cog_dependance.php
-	/var/www/cog_dependance.json
+	/var/www/cog_dependance/cog_dependance.php
+	/var/www/cog_dependance/cog_dependance.json
+
+Run the first install :
+
+	$ sudo php cog_dependance.php install
 
 The Json file contains all the repositories with
 - url
@@ -19,6 +23,13 @@ The Json file contains all the repositories with
 - use_folder
 
 ### Json
+
+You can start with a _almost_ blank cog_dependance.json :
+
+	{
+		"repositories": []
+	}
+
 
 Here is an example of a Json :
 
@@ -39,6 +50,7 @@ Here is an example of a Json :
     	"use_folder" : "true"
 		}]
 	}
+
 
 \*NEW\* _(1.5.8)_ You don't need to add the cog_dependance git to your Json, it will check for itself anyway.
 
@@ -67,16 +79,16 @@ Here is an example of a Json :
 
 __As root,__ simply run a command like :
 
-	php cog_dependance.php install
+	$ sudo php cog_dependance.php install
 
 Will install all needed repositories in the Json (if the repo is not present yet).
 
-	php cog_dependance.php udpate
+	$ sudo php cog_dependance.php udpate
 
 Will check for new version __(without install them)__
 *You can set a crontask to send you the result of this command each day/week/whatever.*
 
-	(_As root_) php cog_dependance.php upgrade
+	$ sudo php cog_dependance.php upgrade
 
 Will install any update.
 
