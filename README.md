@@ -44,7 +44,7 @@ Here is an example of a Json :
 			"path" : "/tmp/plugins",
     	"sudo_root" : "false",
     	"use_folder" : "true"
-		]}
+		}]
 	}
 
 ### URL

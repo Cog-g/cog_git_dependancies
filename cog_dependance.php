@@ -25,8 +25,9 @@
 **                               the content directly in the path.
 ** @optional  : -> git 1.8 to use the single branch clone option.
 ** @licence   : MIT
-** @todo      : a "script_to_lauch" parameter to set a script to launch after 
-**              the installation of the repo.
+** @todo      : - a "script_to_lauch" parameter to set a script to launch after 
+**                the installation of the repo.
+**              - Scriptception.
 ** @changelog :
 **              1.5.7 : . On copying, create the dir if not present.
 **              1.5.6 : . Fixed the copy, only if copy passed on argument or if there is any change.
@@ -193,8 +194,9 @@ foreach ($repos->repositories as $repo) {
 
     echo(exec("echo \"\nCopying from " . $install_dir . " to " . $repo->dir . "\"\n"));
     echo exec( $sudo_root . "cp -pr " . $install_dir . "/* " . $repo->dir . "/"
-      . "\nrm -f " . $repo->dir . "/README*"
-      . "\nrm -fR " . $repo->dir . "/.git");
+      . "&& rm -f " . $repo->dir . "/README*"
+      . "&& rm -f " . $repo->dir . "/.git*"
+      . "&& rm -fR " . $repo->dir . "/.git");
   }
 }
 
