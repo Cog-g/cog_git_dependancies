@@ -73,6 +73,7 @@ if(floatval($git_version) > 1.8)
 $red      = "\033[38;31m";
 $green    = "\033[38;32m";
 $skyblue  = "\033[38;5;32m";
+$yellow   = "\033[33m";
 
 
 $sudo = "sudo -u www-data ";
@@ -91,8 +92,8 @@ foreach ($repos->repositories as $repo) {
 
   $repo->exists = false;
 
-  if($argv[1] == "update")
-    echo("Checking : " . $repo->name . " ");
+  /*if($argv[1] == "update")
+    echo("Checking : " . $repo->name . " ");*/
 
   if(!file_exists($repo->path) || !is_writable($repo->path)) {
     echo($repo->path . " is not writable\n");
@@ -158,8 +159,8 @@ foreach ($repos->repositories as $repo) {
                           $sudo . "git status -sb && " .
                           $sudo_root . "chown -R www-data " . $install_dir . "\n");
     }
-    else {
-      $hasUpdate = $skyblue . "is not cloned yet, but could be\033[39m \n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
+    else { 
+      $hasUpdate = $red . $repo_filename . " is not cloned yet, but could be\033[0m \n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
       echo($hasUpdate);
     }
     
@@ -169,14 +170,14 @@ foreach ($repos->repositories as $repo) {
                 $sudo . "git pull\n" .
                 $sudo_root . "chown -R www-data " . $install_dir . "\n");
         $changed = true;
-        echo($skyblue . $repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\033[39m\n");
+        echo($green . $repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\033[0m\n");
       }
       elseif($repo->exists) {
-        echo($red . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\033[39m\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
+        echo($yellow . $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\033[0m\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
       }
     }
     else {
-      echo($green . " #" . str_replace('## ', "", $hasUpdate) . " is up-to-date\033[39m\n");
+      echo($green . $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " is up-to-date\033[0m\n");
     }
   }
 
