@@ -5,7 +5,7 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.5.7
+** @version   : 1.5.8
 ** @usage     : php cog_dependance.php argv1 [argv2]
 ** @param     : $argv[1]
 **                = install > will install new repo only.
@@ -29,6 +29,7 @@
 **                the installation of the repo.
 **              - Scriptception.
 ** @changelog :
+**              1.5.8 : . Removed self-update from the json file to add it on the code.
 **              1.5.7 : . On copying, create the dir if not present.
 **              1.5.6 : . Fixed the copy, only if copy passed on argument or if there is any change.
 **              1.5.5 : . Added a params to specify a repo to upgrade/install/copy/check
