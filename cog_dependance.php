@@ -54,6 +54,11 @@ $filename = "/var/www/cog_git_dependancies/cog_dependance.json";
 if(!file_exists($filename))
   exit($filename . " does not exists.\n");
 
+echo(
+"\n********************************\n" .
+"* Welcome to cog_dependancies. *" .
+"\n********************************\n\n");
+
 // Json
 $dep = file_get_contents($filename);
 $repos = json_decode($dep);
@@ -70,10 +75,11 @@ if(floatval($git_version) > 1.8)
   $option_single_branch = "--single-branch ";
 
 // Colors
-$red      = "\033[38;31m";
-$green    = "\033[38;32m";
-$skyblue  = "\033[38;5;32m";
-$yellow   = "\033[33m";
+function red($v)     { return("\033[38;31m" . $v . "\033[0m"); }
+function green($v)   { return("\033[38;32m" . $v . "\033[0m"); }
+function skyblue($v) { return("\033[38;5;32m" . $v . "\033[0m"); }
+function yellow($v)  { return("\033[33m" . $v . "\033[0m"); }
+function bold($v)    { return($v); }
 
 
 $sudo = "sudo -u www-data ";
@@ -160,7 +166,7 @@ foreach ($repos->repositories as $repo) {
                           $sudo_root . "chown -R www-data " . $install_dir . "\n");
     }
     else { 
-      $hasUpdate = $red . $repo_filename . " is not cloned yet, but could be\033[0m \n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
+      $hasUpdate = red( $repo_filename . " is not cloned yet, but could be" ) . "\n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
       echo($hasUpdate);
     }
     
@@ -170,14 +176,14 @@ foreach ($repos->repositories as $repo) {
                 $sudo . "git pull\n" .
                 $sudo_root . "chown -R www-data " . $install_dir . "\n");
         $changed = true;
-        echo($green . $repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\033[0m\n");
+        echo(green( $repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated" ) . "\n");
       }
       elseif($repo->exists) {
-        echo($yellow . $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\033[0m\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
+        echo(yellow( $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated" ) . "\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
       }
     }
     else {
-      echo($green . $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " is up-to-date\033[0m\n");
+      echo(green( $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " is up-to-date" ) . "\n");
     }
   }
 
@@ -202,7 +208,7 @@ foreach ($repos->repositories as $repo) {
       exec($sudo_root . "chown -R www-data " . $repo->dir . "\n");
     }
 
-    echo(exec("echo \"\nCopying from " . $install_dir . " to " . $repo->dir . "\"\n"));
+    echo(exec("echo \"\n     [" . bold(yellow("*")) . "] Copying from " . $install_dir . " to " . $repo->dir . "\"\n"));
     exec( $sudo_root . "cp -pr " . $install_dir . "/* " . $repo->dir . "/"
       . "&& rm -f " . $repo->dir . "/README*"
       . "&& rm -f " . $repo->dir . "/.git*"
@@ -212,4 +218,6 @@ foreach ($repos->repositories as $repo) {
 
 if($argv[1] == "install" && $installed == 0)
   echo("Nothing to install.\n");
+
+echo("\n");
 ?>
