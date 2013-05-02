@@ -212,7 +212,7 @@ foreach ($repos->repositories as $repo) {
     exec( $sudo_root . "cp -pr " . $install_dir . "/* " . $repo->dir . "/"
       . "&& rm -f " . $repo->dir . "/README*"
       . "&& rm -f " . $repo->dir . "/.git*"
-      . "&& rm -fR " . $repo->dir . "/.git");
+      . "&& rm -fR " . $repo->dir . "/.git\n");
   }
 }
 
