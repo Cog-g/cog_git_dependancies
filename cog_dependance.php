@@ -27,9 +27,8 @@
 ** @licence   : MIT
 ** @todo      : - a "script_to_lauch" parameter to set a script to launch after 
 **                the installation of the repo.
-**              - Scriptception.
 ** @changelog :
-**              1.5.8 : . Removed self-update from the json file to add it on the code.
+**              1.5.8 : . Removed self-update from the json file to add it on the code and added colors.
 **              1.5.7 : . On copying, create the dir if not present.
 **              1.5.6 : . Fixed the copy, only if copy passed on argument or if there is any change.
 **              1.5.5 : . Added a params to specify a repo to upgrade/install/copy/check
@@ -59,12 +58,21 @@ if(!file_exists($filename))
 $dep = file_get_contents($filename);
 $repos = json_decode($dep);
 
+// Adding mySelf
+$mySelf = json_decode('{ "name" : "cog_git_dependancies", "url": "git://github.com/Cog-g/cog_git_dependancies.git", "version": "master", "path" : "/var/www", "sudo_root" : "false", "use_folder" : "true" }');
+array_unshift($repos->repositories, $mySelf);
+
+
 // Git 1.8 is mandatory to use --single-branch clone option
 $git_version = substr(exec("git --version"), 12, 3);
 $option_single_branch = "";
 if(floatval($git_version) > 1.8) 
   $option_single_branch = "--single-branch ";
 
+// Colors
+$red      = "\033[38;31m";
+$green    = "\033[38;32m";
+$skyblue  = "\033[38;5;32m";
 
 
 $sudo = "sudo -u www-data ";
@@ -145,13 +153,13 @@ foreach ($repos->repositories as $repo) {
       if(DEBUG) {
         echo ("\ncd " . $install_dir . " (with " . $sudo . ")\n");
       }
-      $hasUpdate = exec('cd ' . $install_dir . "\n" .
-                          $sudo . "git remote update" . "\n" .
-                          $sudo . "git status -sb\n" .
+      $hasUpdate = exec('cd ' . $install_dir . " && " .
+                          $sudo . "git remote update && " .
+                          $sudo . "git status -sb && " .
                           $sudo_root . "chown -R www-data " . $install_dir . "\n");
     }
     else {
-      $hasUpdate = " is not cloned yet, but could be \n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
+      $hasUpdate = " " . $skyblue . "is not cloned yet, but could be\033[39m \n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
       echo($hasUpdate);
     }
     
@@ -161,14 +169,14 @@ foreach ($repos->repositories as $repo) {
                 $sudo . "git pull\n" .
                 $sudo_root . "chown -R www-data " . $install_dir . "\n");
         $changed = true;
-        echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\n");
+        echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " " . $skyblue . "has been updated\033[39m\n");
       }
       elseif($repo->exists) {
-        echo($repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
+        echo($repo->name . " #" . str_replace('## ', "", $hasUpdate) . " " . $red . "can be updated\033[39m\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
       }
     }
     else {
-      echo(" #" . str_replace('## ', "", $hasUpdate) . " is up-to-date.\n");
+      echo(" #" . str_replace('## ', "", $hasUpdate) . " is " . $green . "up-to-date\033[39m\n");
     }
   }
 
@@ -194,7 +202,7 @@ foreach ($repos->repositories as $repo) {
     }
 
     echo(exec("echo \"\nCopying from " . $install_dir . " to " . $repo->dir . "\"\n"));
-    echo exec( $sudo_root . "cp -pr " . $install_dir . "/* " . $repo->dir . "/"
+    exec( $sudo_root . "cp -pr " . $install_dir . "/* " . $repo->dir . "/"
       . "&& rm -f " . $repo->dir . "/README*"
       . "&& rm -f " . $repo->dir . "/.git*"
       . "&& rm -fR " . $repo->dir . "/.git");
