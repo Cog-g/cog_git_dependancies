@@ -5,19 +5,23 @@ This script use a json file to get all needed repositories from git, and check f
 
 ## Installation
 
-I recommand to install it on /var/www
-So, you will have two files :
+I recommand to install it on /var/www :
+
 	/var/www/cog_dependance/cog_dependance.php
-	/var/www/cog_dependance/cog_dependance.json
 
 Run the first install :
 
+	$ cd /usr/local
+	$ git clone git://github.com/Cog-g/cog_git_dependancies.git
 	$ sudo php cog_dependance.php install
 
+If the Json file is not found in /var/www/cog_dependance it will be created.
+
 The Json file contains all the repositories with
+
+- name
 - url
 - version
-- path
 - path
 - sudo_root
 - use_folder
@@ -97,19 +101,22 @@ Will install any update.
 You can automate checking for updates
 
 	$ crontab -e
-	0,15,30,45 * * * * php /var/www/cog_git_dependancies/cog_dependance.php update
+	15 3 * * * php /var/www/cog_git_dependancies/cog_dependance.php update
+
+Will check every day at 3:15 am and should send an email.
 
 
 
 
 ### Changelog
 
-1.5.8 : . Removed self-update from the json file to add it on the code.
-1.5.7 : . On copying, create the dir if not present.
-1.5.6 : . Fixed the copy, only if copy passed on argument or if there is any change.
-1.5.5 : . Added a params to specify a repo to upgrade/install/copy/check
-1.5.4 : . Added copy parameter to force a new copy.
-1.5.3 : . Added a changed value to copy new files to the dir if it is needed.
-1.5.2 : . Fixed some right access.
-1.5.1 : . Added the forgoten params to copy "-ipr"
-        . Check for writing permission to the needed folder
+- 1.6.0 : . Make an empty json file if not present and check for the usr.local dir.
+- 1.5.8 : . Removed self-update from the json file to add it on the code.
+- 1.5.7 : . On copying, create the dir if not present.
+- 1.5.6 : . Fixed the copy, only if copy passed on argument or if there is any change.
+- 1.5.5 : . Added a params to specify a repo to upgrade/install/copy/check
+- 1.5.4 : . Added copy parameter to force a new copy.
+- 1.5.3 : . Added a changed value to copy new files to the dir if it is needed.
+- 1.5.2 : . Fixed some right access.
+- 1.5.1 : . Added the forgoten params to copy "-ipr"
+          . Check for writing permission to the needed folder
