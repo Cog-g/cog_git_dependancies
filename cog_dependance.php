@@ -5,7 +5,7 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.5.8
+** @version   : 1.6
 ** @usage     : php cog_dependance.php argv1 [argv2]
 ** @param     : $argv[1]
 **                = install > will install new repo only.
@@ -28,6 +28,7 @@
 ** @todo      : - a "script_to_lauch" parameter to set a script to launch after 
 **                the installation of the repo.
 ** @changelog :
+**              1.6.0 : . Make an empty json file if not present and check for the usr.local dir.
 **              1.5.8 : . Removed self-update from the json file to add it on the code and added colors.
 **              1.5.7 : . On copying, create the dir if not present.
 **              1.5.6 : . Fixed the copy, only if copy passed on argument or if there is any change.
@@ -41,6 +42,26 @@
 
 define("DEBUG", false);
 
+$sudo = "sudo -u www-data ";
+$sudo_root = "sudo -u root ";
+$installed = 0;
+
+// Colors
+function green($v)   { return("\033[32m" . $v . "\033[0m"); }
+function grey($v)    { return("\033[0;37m" . $v . "\033[0m"); }
+function red($v)     { return("\033[31m" . $v . "\033[0m"); }
+function skyblue($v) { return("\033[38;5;32m" . $v . "\033[0m"); }
+function yellow($v)  { return("\033[33m" . $v . "\033[0m"); }
+
+function bold($v)    { return("\033[1m" . $v . "\033[0m"); }
+function bold_red($v)    { return("\033[31m" . $v . "\033[0m"); }
+
+
+echo(bold("\n********************************\n" .
+"* Welcome to cog_dependancies. *" .
+"\n********************************\n\n"));
+
+
 if(empty($argv[1]))
   exit("What do you want me to do ?!\n");
 
@@ -50,20 +71,17 @@ if($argv[1] == "copy" && empty($argv[2]))
 if(empty($argv[2]))
   $argv[2] = 'all';
 
-if(!file_exists($filename))
+if(!file_exists("/usr/local/cog_dependancies")) {
+  echo( grey("Creating the necessary folder...") . "\n" );
+  exec($sudo_root . "mkdir /usr/local/cog_dependancies && chown www-data /usr/local/cog_dependancies");
+}
 
-$filename = "/var/www/cog_git_dependancies/cog_dependance2.json";
+$filename = "/var/www/cog_git_dependancies/cog_dependance.json";
 if(!file_exists($filename)) {
+  echo( grey("Creating a blank Json...") . "\n" );
   echo( exec("touch " . $filename . "\n") );
   exec("echo \"{ \"repositories\": [] }\" > " . $filename . "\n");
 }
-
-exit();
-
-echo(
-"\n********************************\n" .
-"* Welcome to cog_dependancies. *" .
-"\n********************************\n\n");
 
 // Json
 $dep = file_get_contents($filename);
@@ -80,17 +98,6 @@ $option_single_branch = "";
 if(floatval($git_version) > 1.8) 
   $option_single_branch = "--single-branch ";
 
-// Colors
-function red($v)     { return("\033[38;31m" . $v . "\033[0m"); }
-function green($v)   { return("\033[38;32m" . $v . "\033[0m"); }
-function skyblue($v) { return("\033[38;5;32m" . $v . "\033[0m"); }
-function yellow($v)  { return("\033[33m" . $v . "\033[0m"); }
-function bold($v)    { return($v); }
-
-
-$sudo = "sudo -u www-data ";
-$sudo_root = "sudo -u root ";
-$installed = 0;
 
 
 foreach ($repos->repositories as $repo) {
@@ -147,9 +154,20 @@ foreach ($repos->repositories as $repo) {
   //
   //
   if(!$repo->exists && $argv[1] == "install" && $thisOne ) {
-    echo('Installing ' . $repo->name . "#" . $repo->version . "\n");
+    echo(yellow( 'Installing ' . $repo->name . "#" . $repo->version . "..." ) . "\n");
+
+    if(!file_exists($install_dir)) {
+      //echo( skyblue($sudo_root . "mkdir " . $install_dir . " && chown www-data " . $install_dir) . "\n" );
+      exec($sudo_root . "mkdir " . $install_dir . " && chown www-data " . $install_dir . "\n");
+    }
+
     // Will clone the soda-v1 branch directly into /tmp/plugin (instead of soda-theme folder).
     $clone = exec($sudo . 'git clone -b ' . $repo->version . ' ' . $option_single_branch . $repo->url . ' ' . $install_dir . "\n");
+
+    if(substr($clone, 0, 5) == "fatal") {
+      echo( red("Fatal Error.") .  "\n" );
+      continue;
+    }
 
     $changed = true;
     $installed++; // one more.
@@ -172,7 +190,7 @@ foreach ($repos->repositories as $repo) {
                           $sudo_root . "chown -R www-data " . $install_dir . "\n");
     }
     else { 
-      $hasUpdate = red( $repo_filename . " is not cloned yet, but could be" ) . "\n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
+      $hasUpdate = bold_red( $repo_filename . " is not cloned yet, but could be" ) . "\n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
       echo($hasUpdate);
     }
     
@@ -214,7 +232,7 @@ foreach ($repos->repositories as $repo) {
       exec($sudo_root . "chown -R www-data " . $repo->dir . "\n");
     }
 
-    echo(exec("echo \"\n     [" . bold(yellow("*")) . "] Copying from " . $install_dir . " to " . $repo->dir . "\"\n"));
+    echo(exec("echo \"\n     [" . yellow("*") . "] Copying from " . $install_dir . " to " . $repo->dir . "\"\n"));
     exec( $sudo_root . "cp -pr " . $install_dir . "/* " . $repo->dir . "/"
       . "&& rm -f " . $repo->dir . "/README*"
       . "&& rm -f " . $repo->dir . "/.git*"
@@ -223,7 +241,7 @@ foreach ($repos->repositories as $repo) {
 }
 
 if($argv[1] == "install" && $installed == 0)
-  echo("Nothing to install.\n");
+  echo( green("Nothing to install.") . "\n");
 
 echo("\n");
 ?>
