@@ -169,14 +169,14 @@ foreach ($repos->repositories as $repo) {
                 $sudo . "git pull\n" .
                 $sudo_root . "chown -R www-data " . $install_dir . "\n");
         $changed = true;
-        echo($repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " " . $skyblue . "has been updated\033[39m\n");
+        echo($skyblue . $repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated\033[39m\n");
       }
       elseif($repo->exists) {
-        echo($repo->name . " #" . str_replace('## ', "", $hasUpdate) . " " . $red . "can be updated\033[39m\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
+        echo($red . $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated\033[39m\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
       }
     }
     else {
-      echo(" #" . str_replace('## ', "", $hasUpdate) . " is " . $green . "up-to-date\033[39m\n");
+      echo($green . " #" . str_replace('## ', "", $hasUpdate) . " is up-to-date\033[39m\n");
     }
   }
 
