@@ -56,7 +56,7 @@ Here is an example of a Json :
 	}
 
 
-\*NEW\* _(1.5.8)_ You don't need to add the cog_dependance git to your Json, it will check for itself anyway.
+_(1.5.8)_ You don't need to add the cog_dependance git to your Json, it will check for itself anyway.
 
 ### URL
 
@@ -101,15 +101,17 @@ Will install any update.
 You can automate checking for updates
 
 	$ crontab -e
-	15 3 * * * php /var/www/cog_git_dependancies/cog_dependance.php update
+	15 3 * * * php /var/www/cog_git_dependancies/cog_dependance.php update cron
 
 Will check every day at 3:15 am and should send an email.
+_(1.6.1)_ Adding paramter "cron" to update return data without any color.
 
 
 
 
 ### Changelog
 
+- 1.6.1 : . Added a cron value for second argument.
 - 1.6.0 : . Make an empty json file if not present and check for the usr.local dir.
 - 1.5.8 : . Removed self-update from the json file to add it on the code.
 - 1.5.7 : . On copying, create the dir if not present.

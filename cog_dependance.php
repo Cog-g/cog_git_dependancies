@@ -5,14 +5,17 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.6
+** @version   : 1.6.1
 ** @usage     : php cog_dependance.php argv1 [argv2]
 ** @param     : $argv[1]
 **                = install > will install new repo only.
 **                = update  > will *check* for new version.
+**                = update cron  > Like "update" but simplier, made for cron task response.
 **                = upgrade > will pull all repo.
 **                = copy > will force the copy of the argv[2] to its destination folder.
-**              $argv[2] : (optionnal) tells which repositorie, or "all".
+**              $argv[2]
+**                = (optionnal) tells which repositorie, or "all".
+**                = [cron] With update as first argmument, simplify the returned data for cron task.
 ** @required  : -> a cog_dependance.json with a "repositories" array contening all
 **               parameters for each one :
 **                  name : the name of the repo. It will be use as folder name.
@@ -28,6 +31,7 @@
 ** @todo      : - a "script_to_lauch" parameter to set a script to launch after 
 **                the installation of the repo.
 ** @changelog :
+**              1.6.1 : . Added a cron value for second argument.
 **              1.6.0 : . Make an empty json file if not present and check for the usr.local dir.
 **              1.5.8 : . Removed self-update from the json file to add it on the code and added colors.
 **              1.5.7 : . On copying, create the dir if not present.
@@ -45,22 +49,35 @@ define("DEBUG", false);
 $sudo = "sudo -u www-data ";
 $sudo_root = "sudo -u root ";
 $installed = 0;
+$cronjob = false;
+
+if($argv[1] == "update" && $argv[2] == "cron") {
+  $cronjob = true;
+}
 
 // Colors
-function green($v)   { return("\033[32m" . $v . "\033[0m"); }
-function grey($v)    { return("\033[0;37m" . $v . "\033[0m"); }
-function red($v)     { return("\033[31m" . $v . "\033[0m"); }
-function skyblue($v) { return("\033[38;5;32m" . $v . "\033[0m"); }
-function yellow($v)  { return("\033[33m" . $v . "\033[0m"); }
+function green($v)    { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[32m" . $v . "\033[0m"; }      return($return); }
+function grey($v)     { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[0;37m" . $v . "\033[0m"; }    return($return); }
+function red($v)      { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[31m" . $v . "\033[0m"; }      return($return); }
+function skyblue($v)  { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[38;5;32m" . $v . "\033[0m"; } return($return); }
+function yellow($v)   { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[33m" . $v . "\033[0m"; }      return($return); }
 
-function bold($v)    { return("\033[1m" . $v . "\033[0m"); }
-function bold_red($v)    { return("\033[31m" . $v . "\033[0m"); }
+function bold($v)     { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[1m" . $v . "\033[0m"; }       return($return); }
+function bold_red($v) { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[31m" . $v . "\033[0m"; }      return($return); }
 
+$version = "1.6.1";
 
-echo(bold("\n********************************\n" .
-"* Welcome to cog_dependancies. *" .
-"\n********************************\n\n"));
+if($cronjob) {
+  echo("Welcome to cog_dependancies " . $version ."\n\n");
+} else {
+  echo(bold("\n*************************************\n" .
+    "* Welcome to cog_dependancies " . $version . " *" .
+    "\n*************************************\n\n"));
+}
 
+if($argv[1] == "update" && $argv[2] == "cron") {
+  $argv[2] = null;
+}
 
 if(empty($argv[1]))
   exit("What do you want me to do ?!\n");
@@ -200,14 +217,14 @@ foreach ($repos->repositories as $repo) {
                 $sudo . "git pull\n" .
                 $sudo_root . "chown -R www-data " . $install_dir . "\n");
         $changed = true;
-        echo(green( $repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated" ) . "\n");
+        echo( green( $repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated" ) . "\n");
       }
       elseif($repo->exists) {
-        echo(yellow( $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated" ) . "\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
+        echo( yellow( $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated" ) . "\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
       }
     }
     else {
-      echo(green( $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " is up-to-date" ) . "\n");
+      echo( green( $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " is up-to-date" ) . "\n");
     }
   }
 
