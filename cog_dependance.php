@@ -55,6 +55,7 @@ $cronjob = $isInstalled = false;
 
 if($argv[1] == "update" && $argv[2] == "cron") {
   $cronjob = true;
+  $argv[2] = null;
 }
 
 // Colors
