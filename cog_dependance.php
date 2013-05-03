@@ -5,7 +5,7 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.6.1
+** @version   : 1.6.2
 ** @usage     : php cog_dependance.php argv1 [argv2]
 ** @param     : $argv[1]
 **                = install > will install new repo only.
@@ -31,6 +31,7 @@
 ** @todo      : - a "script_to_lauch" parameter to set a script to launch after 
 **                the installation of the repo.
 ** @changelog :
+**              1.6.2 : . Fixed the installation phase.
 **              1.6.1 : . Added a cron value for second argument.
 **              1.6.0 : . Make an empty json file if not present and check for the usr.local dir.
 **              1.5.8 : . Removed self-update from the json file to add it on the code and added colors.
@@ -49,7 +50,7 @@ define("DEBUG", false);
 $sudo = "sudo -u www-data ";
 $sudo_root = "sudo -u root ";
 $installed = 0;
-$cronjob = false;
+$cronjob = $isInstalled = false;
 
 if($argv[1] == "update" && $argv[2] == "cron") {
   $cronjob = true;
@@ -64,6 +65,27 @@ function yellow($v)   { global $cronjob; if($cronjob) { $return = $v; } else { $
 
 function bold($v)     { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[1m" . $v . "\033[0m"; }       return($return); }
 function bold_red($v) { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[31m" . $v . "\033[0m"; }      return($return); }
+
+// Check if is installed
+if(!file_exists("/usr/local/cog_dependancies")) {
+  echo( skyblue("Creating /usr/local/cog_dependancies") . "\n" );
+  exec($sudo_root . "mkdir /usr/local/cog_dependancies && chown www-data /usr/local/cog_dependancies\n");
+}
+
+$dirname  = "/var/www/cog_git_dependancies";
+$filename = $dirname . "/cog_dependance.json";
+if(!file_exists($dirname)) {
+  echo( skyblue("Creating " . $dirname) . "\n" );
+  exec($sudo_root . "mkdir " . $dirname . " && chown www-data " . $dirname . "\n");
+} 
+if(!file_exists($filename)) {
+  echo( skyblue("Creating a blank " . $filename) . "\n" );
+  echo( exec($sudo . "touch " . $filename . "\n") );
+  exec('echo "{ \"repositories\": [] }" > ' . $filename . "\n");
+}
+
+if(!file_exists("/usr/local/cog_dependancies") || !file_exists($filename))
+  exit("Cog_Dependancies is not installed.");
 
 $version = "1.6.1";
 
@@ -88,17 +110,6 @@ if($argv[1] == "copy" && empty($argv[2]))
 if(empty($argv[2]))
   $argv[2] = 'all';
 
-if(!file_exists("/usr/local/cog_dependancies")) {
-  echo( grey("Creating the necessary folder...") . "\n" );
-  exec($sudo_root . "mkdir /usr/local/cog_dependancies && chown www-data /usr/local/cog_dependancies");
-}
-
-$filename = "/var/www/cog_git_dependancies/cog_dependance.json";
-if(!file_exists($filename)) {
-  echo( grey("Creating a blank Json...") . "\n" );
-  echo( exec("touch " . $filename . "\n") );
-  exec("echo \"{ \"repositories\": [] }\" > " . $filename . "\n");
-}
 
 // Json
 $dep = file_get_contents($filename);

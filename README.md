@@ -5,15 +5,12 @@ This script use a json file to get all needed repositories from git, and check f
 
 ## Installation
 
-I recommand to install it on /var/www :
+I recommand to clone it on /tmp to launch the installation :
 
-	/var/www/cog_dependance/cog_dependance.php
-
-Run the first install :
-
-	$ cd /usr/local
+	$ cd /tmp
 	$ git clone git://github.com/Cog-g/cog_git_dependancies.git
-	$ sudo php cog_dependance.php install
+	$ sudo php /tmp/cog_git_dependancies/cog_dependance.php install
+	$ rm -r /tmp/cog_git_dependancies
 
 If the Json file is not found in /var/www/cog_dependance it will be created.
 
