@@ -28,9 +28,11 @@
 **                               the content directly in the path.
 ** @optional  : -> git 1.8 to use the single branch clone option.
 ** @licence   : MIT
-** @todo      : - a "script_to_lauch" parameter to set a script to launch after 
-**                the installation of the repo.
+** @todo      : . After the installation, if found, run a cog_setup.sh.
+**              . Or a cog_update.sh after an update.
+**              . Remove all those files.
 ** @changelog :
+**              1.6.3 : . Added cog_setup and cog_update bash script (and remove them).
 **              1.6.2 : . Fixed the installation phase.
 **                1.6.2.5 . Small fix.
 **              1.6.1 : . Added a cron value for second argument.
@@ -105,6 +107,9 @@ if(empty($argv[2]))
 if($argv[1] == "update" && $argv[2] == "cron") {
   $argv[2] = null;
 }
+
+if($argv[2] == "self")
+  $argv[2] = "cog_git_dependancies";
 
 if(empty($argv[1]))
   exit("What do you want me to do ?!\n");
@@ -262,11 +267,30 @@ foreach ($repos->repositories as $repo) {
       exec($sudo_root . "chown -R www-data " . $repo->dir . "\n");
     }
 
-    echo(exec("echo \"\n     [" . yellow("*") . "] Copying from " . $install_dir . " to " . $repo->dir . "\"\n"));
+    echo(exec("echo \"\n[" . yellow("***") . "] Copying from " . $install_dir . " to " . $repo->dir . "\"\n"));
     exec( $sudo_root . "cp -pr " . $install_dir . "/* " . $repo->dir . "/"
-      . "&& rm -f " . $repo->dir . "/README*"
-      . "&& rm -f " . $repo->dir . "/.git*"
+      . "&& rm -f "  . $repo->dir . "/README*"
+      . "&& rm -f "  . $repo->dir . "/.git*"
       . "&& rm -fR " . $repo->dir . "/.git\n");
+
+    //
+    // Run cog_setup.sh/update script if they are found.
+    //
+    $fileToLaunch = false;
+    if( ($argv[1] == "upgrade" || $argv[1] == "copy") && file_exists($repo->dir . '/cog_update.sh')) {
+      $fileToLaunch = 'cog_update.sh';
+    }
+    elseif($argv[1] == "install" && file_exists($repo->dir . '/cog_setup.sh')) {
+      $fileToLaunch = 'cog_setup.sh';
+    }
+
+    if($fileToLaunch !== false) {
+      echo( "\n" . skyblue("Running " . $fileToLaunch . "...\n") );
+      exec( $sudo_root . "$(which sh) " . $repo->dir . "/" . $fileToLaunch 
+        . " && rm -f "  . $repo->dir . "/cog_*.sh\n" );
+      echo( skyblue("File done.\n") );
+    }
+    echo("\n");
   }
 }
 
