@@ -5,7 +5,7 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.6.2
+** @version   : 1.6.2.5
 ** @usage     : php cog_dependance.php argv1 [argv2]
 ** @param     : $argv[1]
 **                = install > will install new repo only.
@@ -32,6 +32,7 @@
 **                the installation of the repo.
 ** @changelog :
 **              1.6.2 : . Fixed the installation phase.
+**                1.6.2.5 . Small fix.
 **              1.6.1 : . Added a cron value for second argument.
 **              1.6.0 : . Make an empty json file if not present and check for the usr.local dir.
 **              1.5.8 : . Removed self-update from the json file to add it on the code and added colors.
@@ -97,6 +98,9 @@ if($cronjob) {
     "\n*************************************\n\n"));
 }
 
+if(empty($argv[2]))
+  $argv[2] = 'all';
+
 if($argv[1] == "update" && $argv[2] == "cron") {
   $argv[2] = null;
 }
@@ -107,8 +111,6 @@ if(empty($argv[1]))
 if($argv[1] == "copy" && empty($argv[2]))
   exit("What do you want me to copy ?!\n");
 
-if(empty($argv[2]))
-  $argv[2] = 'all';
 
 
 // Json
@@ -146,7 +148,6 @@ foreach ($repos->repositories as $repo) {
     echo($repo->path . " is not writable\n");
     continue;
   }
-
   
   if(!empty($repo->name)) {
     $repo_filename = $repo->name;
