@@ -322,7 +322,7 @@ if($argv[1] == "install" && $installed == 0)
   echo( green("Nothing to install.") . "\n");
 
 if($cronjob)
-  mail('cguay@netmediaeurope.com', 'Test dependancies', $email_message);
+  mail('youremail', 'Dependancies report', $email_message);
 
 echo("\n");
 ?>
