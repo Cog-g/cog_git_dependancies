@@ -28,27 +28,30 @@ The Json file contains all the repositories with
 You can start with a _almost_ blank cog_dependance.json :
 
 	{
+		"email": "",
 		"repositories": []
 	}
 
+___(1.6.4)_ PLEASE INSERT YOUR EMAIL IN THIS JSON FILE__
 
 Here is an example of a Json :
 
 	{
+		"email": "my@email.com",
 		"repositories": [{
-	    "name" : "soda",
+			"name" : "soda",
 			"url": "git://github.com/buymeasoda/soda-theme.git",
 			"version": "soda-v1",
 			"path" : "/tmp/plugins",
-    	"sudo_root" : "false",
-    	"use_folder" : "true"
+			"sudo_root" : "false",
+			"use_folder" : "true"
 		},{
-	    "name" : "tmpl",
+			"name" : "tmpl",
 			"url": "git://github.com/buymeasoda/tmpl.git",
 			"version": "",
 			"path" : "/tmp/plugins",
-    	"sudo_root" : "false",
-    	"use_folder" : "true"
+			"sudo_root" : "false",
+			"use_folder" : "true"
 		}]
 	}
 
@@ -123,7 +126,7 @@ Will check every day at 3:15 am and should send an email.
 					. Add php email function to manage cron reports.
 - 1.6.3 : . Added cog_setup and cog_update bash script (and remove them).
 - 1.6.2 : . Fixed the installation phase.
-  	1.6.2.5 . Small fix.
+		1.6.2.5 . Small fix.
 - 1.6.1 : . Added a cron value for second argument.
 - 1.6.0 : . Make an empty json file if not present and check for the usr.local dir.
 - 1.5.8 : . Removed self-update from the json file to add it on the code.
@@ -134,4 +137,4 @@ Will check every day at 3:15 am and should send an email.
 - 1.5.3 : . Added a changed value to copy new files to the dir if it is needed.
 - 1.5.2 : . Fixed some right access.
 - 1.5.1 : . Added the forgoten params to copy "-ipr"
-          . Check for writing permission to the needed folder
+					. Check for writing permission to the needed folder

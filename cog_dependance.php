@@ -55,7 +55,15 @@ define("DEBUG", false);
 $sudo = "sudo -u www-data ";
 $sudo_root = "sudo -u root ";
 $installed = $hasUpdateNumber = $canBeCloned = 0;
-$cronjob = $isInstalled = false;
+$firstInstall = $cronjob = $isInstalled = false;
+
+
+$dirname  = "/var/www/cog_git_dependancies";
+$filename = $dirname . "/cog_dependance.json";
+
+$version = "1.6.4";
+$email_message = "";
+
 
 if($argv[1] == "update" && ( !empty($argv[2]) && $argv[2] == "cron") ) {
   $cronjob = true;
@@ -78,8 +86,6 @@ if(!file_exists("/usr/local/cog_dependancies")) {
   exec($sudo_root . "mkdir /usr/local/cog_dependancies && chown www-data /usr/local/cog_dependancies\n");
 }
 
-$dirname  = "/var/www/cog_git_dependancies";
-$filename = $dirname . "/cog_dependance.json";
 if(!file_exists($dirname)) {
   echo( skyblue("Creating " . $dirname) . "\n" );
   exec($sudo_root . "mkdir " . $dirname . " && chown www-data " . $dirname . "\n");
@@ -87,22 +93,20 @@ if(!file_exists($dirname)) {
 if(!file_exists($filename)) {
   echo( skyblue("Creating a blank " . $filename) . "\n" );
   echo( exec($sudo . "touch " . $filename . "\n") );
-  exec('echo "{ \"repositories\": [] }" > ' . $filename . "\n");
+  exec('echo "{ \"email\": \"\", \"repositories\": [] }" > ' . $filename . "\n");
+  $firstInstall = true;
 }
 
 if(!file_exists("/usr/local/cog_dependancies") || !file_exists($filename))
   exit("Cog_Dependancies is not installed.");
 
-$version = "1.6.1";
-$email_message = "";
-
 if($cronjob) {
   $email_message .= "=================================\nWelcome to cog_dependancies " . $version ."\n=================================\n\n";
-} else {
-  echo(bold("\n*************************************\n" .
-    "* Welcome to cog_dependancies " . $version . " *" .
-    "\n*************************************\n\n"));
 }
+
+echo(bold("\n*************************************\n" .
+  "* Welcome to cog_dependancies " . $version . " *" .
+  "\n*************************************\n\n"));
 
 if(empty($argv[2]))
   $argv[2] = 'all';
@@ -129,6 +133,10 @@ $repos = json_decode($dep);
 // Adding mySelf
 $mySelf = json_decode('{ "name" : "cog_git_dependancies", "url": "git://github.com/Cog-g/cog_git_dependancies.git", "version": "master", "path" : "/var/www", "sudo_root" : "false", "use_folder" : "true" }');
 array_unshift($repos->repositories, $mySelf);
+
+if(empty($repos->email)) {
+  exit("[FATAL] Please give me an email adress to send report (put it in the Json file).\n");
+}
 
 // Git 1.8 is mandatory to use --single-branch clone option
 $git_version = substr(exec("git --version"), 12, 3);
@@ -258,17 +266,6 @@ foreach ($repos->repositories as $repo) {
   }
 
 
-  if($canBeCloned > 0) {
-    $email_message .= "\n\n" . $canBeCloned . " can be cloned\n";
-    echo("\n" . $canBeCloned . " can be cloned\n");
-  }
-
-  if($hasUpdateNumber > 0) {
-    $email_message .= "\n\n" . $hasUpdateNumber . " can be upgraded\n";
-    echo("\n" . $hasUpdateNumber . " can be upgraded\n");
-  }
-
-
   $copy = false;
   if($argv[1] == "copy") {
     if( $thisOne ) {
@@ -318,11 +315,21 @@ foreach ($repos->repositories as $repo) {
   }
 }
 
+if($canBeCloned > 0) {
+  $email_message .= "\n\n" . $canBeCloned . " can be cloned\n";
+  echo("\n" . $canBeCloned . " can be cloned\n");
+}
+
+if($hasUpdateNumber > 0) {
+  $email_message .= "\n\n" . $hasUpdateNumber . " can be upgraded\n";
+  echo("\n" . $hasUpdateNumber . " can be upgraded\n");
+}
+
 if($argv[1] == "install" && $installed == 0)
   echo( green("Nothing to install.") . "\n");
 
 if($cronjob)
-  mail('youremail', 'Dependancies report', $email_message);
+  mail($repos->email, 'Dependancies report', $email_message);
 
 echo("\n");
 ?>
