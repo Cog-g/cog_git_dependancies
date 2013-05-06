@@ -75,17 +75,17 @@ _(1.5.8)_ You don't need to add the cog_dependance git to your Json, it will che
 
 (bool) Tells if the folder of the repo should be use or, if the files needs to be directly copied to the specified folder.
 
-## Script to launch (1.6.3)
+## Script to launch _(1.6.3)_
 
-Adding a cog_setup.sh or cog_update.sh file to your repository will make the program to run and delete them.
+Adding a `on_setup.sh` or `on_update.sh` file to your repository will make the program to run and delete them.
 
-### cog_setup.sh
+### on_setup.sh
 Will be ran on installation.
 
-### cog_update.sh
+### on_update.sh
 Will be ran on upgrade or copy.
 
-_All cog*.sh files will be removed after an installation/upgrade/copy_
+_These files will be removed after an installation/upgrade/copy_
 
 ## Run
 
@@ -109,16 +109,18 @@ Will install any update.
 You can automate checking for updates
 
 	$ crontab -e
-	15 3 * * * php /var/www/cog_git_dependancies/cog_dependance.php update cron
+	15 3 * * * php /var/www/cog_git_dependancies/cog_dependance.php update cron >/dev/null 2>&1
 
+_(1.6.1)_ Adding parameter "cron" to update return data without any color.
 Will check every day at 3:15 am and should send an email.
-_(1.6.1)_ Adding paramter "cron" to update return data without any color.
 
 
 
 
 ### Changelog
 
+- 1.6.4 : . Changed name of script files to be run (removed cog_ prefix).
+					. Add php email function to manage cron reports.
 - 1.6.3 : . Added cog_setup and cog_update bash script (and remove them).
 - 1.6.2 : . Fixed the installation phase.
   	1.6.2.5 . Small fix.

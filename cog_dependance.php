@@ -5,7 +5,7 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.6.2.5
+** @version   : 1.6.4
 ** @usage     : php cog_dependance.php argv1 [argv2]
 ** @param     : $argv[1]
 **                = install > will install new repo only.
@@ -32,6 +32,8 @@
 **              . Or a cog_update.sh after an update.
 **              . Remove all those files.
 ** @changelog :
+**              1.6.4 : . Changed name of script files to be run (removed cog_ prefix).
+**                      . Add php email function to manage cron reports.
 **              1.6.3 : . Added cog_setup and cog_update bash script (and remove them).
 **              1.6.2 : . Fixed the installation phase.
 **                1.6.2.5 . Small fix.
@@ -52,23 +54,23 @@ define("DEBUG", false);
 
 $sudo = "sudo -u www-data ";
 $sudo_root = "sudo -u root ";
-$installed = 0;
+$installed = $hasUpdateNumber = $canBeCloned = 0;
 $cronjob = $isInstalled = false;
 
-if($argv[1] == "update" && $argv[2] == "cron") {
+if($argv[1] == "update" && ( !empty($argv[2]) && $argv[2] == "cron") ) {
   $cronjob = true;
   $argv[2] = null;
 }
 
 // Colors
-function green($v)    { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[32m" . $v . "\033[0m"; }      return($return); }
-function grey($v)     { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[0;37m" . $v . "\033[0m"; }    return($return); }
-function red($v)      { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[31m" . $v . "\033[0m"; }      return($return); }
-function skyblue($v)  { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[38;5;32m" . $v . "\033[0m"; } return($return); }
-function yellow($v)   { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[33m" . $v . "\033[0m"; }      return($return); }
+function green($v)    { return("\033[32m" . $v . "\033[0m"); }
+function grey($v)     { return("\033[0;37m" . $v . "\033[0m"); }
+function red($v)      { return("\033[31m" . $v . "\033[0m"); }
+function skyblue($v)  { return("\033[38;5;32m" . $v . "\033[0m"); }
+function yellow($v)   { return("\033[33m" . $v . "\033[0m"); }
 
-function bold($v)     { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[1m" . $v . "\033[0m"; }       return($return); }
-function bold_red($v) { global $cronjob; if($cronjob) { $return = $v; } else { $return = "\033[31m" . $v . "\033[0m"; }      return($return); }
+function bold($v)     { return("\033[1m" . $v . "\033[0m"); }
+function bold_red($v) { return("\033[31m" . $v . "\033[0m"); }
 
 // Check if is installed
 if(!file_exists("/usr/local/cog_dependancies")) {
@@ -92,9 +94,10 @@ if(!file_exists("/usr/local/cog_dependancies") || !file_exists($filename))
   exit("Cog_Dependancies is not installed.");
 
 $version = "1.6.1";
+$email_message = "";
 
 if($cronjob) {
-  echo("Welcome to cog_dependancies " . $version ."\n\n");
+  $email_message .= "=================================\nWelcome to cog_dependancies " . $version ."\n=================================\n\n";
 } else {
   echo(bold("\n*************************************\n" .
     "* Welcome to cog_dependancies " . $version . " *" .
@@ -126,7 +129,6 @@ $repos = json_decode($dep);
 // Adding mySelf
 $mySelf = json_decode('{ "name" : "cog_git_dependancies", "url": "git://github.com/Cog-g/cog_git_dependancies.git", "version": "master", "path" : "/var/www", "sudo_root" : "false", "use_folder" : "true" }');
 array_unshift($repos->repositories, $mySelf);
-
 
 // Git 1.8 is mandatory to use --single-branch clone option
 $git_version = substr(exec("git --version"), 12, 3);
@@ -224,8 +226,10 @@ foreach ($repos->repositories as $repo) {
                           $sudo . "git status -sb && " .
                           $sudo_root . "chown -R www-data " . $install_dir . "\n");
     }
-    else { 
-      $hasUpdate = bold_red( $repo_filename . " is not cloned yet, but could be" ) . "\n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
+    else {
+      $canBeCloned++;
+      $message = $repo_filename . " is not cloned yet, but could be.\n";
+      $hasUpdate = bold_red( $message ) . "\n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
       echo($hasUpdate);
     }
     
@@ -235,16 +239,35 @@ foreach ($repos->repositories as $repo) {
                 $sudo . "git pull\n" .
                 $sudo_root . "chown -R www-data " . $install_dir . "\n");
         $changed = true;
-        echo( green( $repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated" ) . "\n");
+        
+        $message = $repo_filename . " #" . str_replace('## ', "", $hasUpdate) . " has been updated";
+        echo( green( $message ) . "\n");
       }
       elseif($repo->exists) {
-        echo( yellow( $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be updated" ) . "\n         -> Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
+        $hasUpdateNumber++;
+        $message = $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be upgraded";
+        echo( yellow( $message ) . "\n       " . yellow("->") . " Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
       }
     }
     else {
-      echo( green( $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " is up-to-date" ) . "\n");
+      $message = $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " is up-to-date";
+      echo( green( $message ) . "\n");
     }
+
+    $email_message .= $message . ".\n";
   }
+
+
+  if($canBeCloned > 0) {
+    $email_message .= "\n\n" . $canBeCloned . " can be cloned\n";
+    echo("\n" . $canBeCloned . " can be cloned\n");
+  }
+
+  if($hasUpdateNumber > 0) {
+    $email_message .= "\n\n" . $hasUpdateNumber . " can be upgraded\n";
+    echo("\n" . $hasUpdateNumber . " can be upgraded\n");
+  }
+
 
   $copy = false;
   if($argv[1] == "copy") {
@@ -277,17 +300,18 @@ foreach ($repos->repositories as $repo) {
     // Run cog_setup.sh/update script if they are found.
     //
     $fileToLaunch = false;
-    if( ($argv[1] == "upgrade" || $argv[1] == "copy") && file_exists($repo->dir . '/cog_update.sh')) {
-      $fileToLaunch = 'cog_update.sh';
+    if( ($argv[1] == "upgrade" || $argv[1] == "copy") && file_exists($repo->dir . '/on_update.sh')) {
+      $fileToLaunch = 'on_update.sh';
     }
-    elseif($argv[1] == "install" && file_exists($repo->dir . '/cog_setup.sh')) {
-      $fileToLaunch = 'cog_setup.sh';
+    elseif($argv[1] == "install" && file_exists($repo->dir . '/on_setup.sh')) {
+      $fileToLaunch = 'on_setup.sh';
     }
 
     if($fileToLaunch !== false) {
       echo( "\n" . skyblue("Running " . $fileToLaunch . "...\n") );
       exec( $sudo_root . "$(which sh) " . $repo->dir . "/" . $fileToLaunch 
-        . " && rm -f "  . $repo->dir . "/cog_*.sh\n" );
+        . " && rm -f "  . $repo->dir . "/on_setup.sh"
+        . " && rm -f "  . $repo->dir . "/on_update.sh\n" );
       echo( skyblue("File done.\n") );
     }
     echo("\n");
@@ -296,6 +320,9 @@ foreach ($repos->repositories as $repo) {
 
 if($argv[1] == "install" && $installed == 0)
   echo( green("Nothing to install.") . "\n");
+
+if($cronjob)
+  mail('cguay@netmediaeurope.com', 'Test dependancies', $email_message);
 
 echo("\n");
 ?>
