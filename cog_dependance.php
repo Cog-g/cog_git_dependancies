@@ -237,7 +237,7 @@ foreach ($repos->repositories as $repo) {
     else {
       $canBeCloned++;
       $message = $repo_filename . " is not cloned yet, but could be.\n";
-      $hasUpdate = bold_red( $message ) . "\n          -> Run : php " . $argv[0] . " install [" . $repo->name . "]\n\n";
+      $hasUpdate = bold_red( $message ) . "\n          -> Run : sudo php " . $argv[0] . " install " . $repo->name . "\n\n";
       echo($hasUpdate);
     }
     
@@ -254,7 +254,7 @@ foreach ($repos->repositories as $repo) {
       elseif($repo->exists) {
         $hasUpdateNumber++;
         $message = $repo->name . " #" . str_replace('## ', "", $hasUpdate) . " can be upgraded";
-        echo( yellow( $message ) . "\n       " . yellow("->") . " Run : php " . $argv[0] . " upgrade [" . $repo->name . "]\n\n");
+        echo( yellow( $message ) . "\n       " . yellow("->") . " Run : sudo php " . $argv[0] . " upgrade " . $repo->name . "\n\n");
       }
     }
     else {
