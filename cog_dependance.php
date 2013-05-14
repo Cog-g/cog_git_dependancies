@@ -5,7 +5,7 @@
 **
 ** @author    : Constantin Guay
 ** @url       : http://const-g.fr
-** @version   : 1.6.4
+** @version   : 1.6.5
 ** @usage     : php cog_dependance.php argv1 [argv2]
 ** @param     : $argv[1]
 **                = install > will install new repo only.
@@ -32,6 +32,7 @@
 **              . Or a cog_update.sh after an update.
 **              . Remove all those files.
 ** @changelog :
+**              1.6.5 : . Send the cron email only if there is update.
 **              1.6.4 : . Changed name of script files to be run (removed cog_ prefix).
 **                      . Add php email function to manage cron reports.
 **              1.6.3 : . Added cog_setup and cog_update bash script (and remove them).
@@ -50,6 +51,8 @@
 **                      . Check for writing permission to the needed folder
 */
 
+$version = "1.6.5";
+
 define("DEBUG", false);
 
 $sudo = "sudo -u www-data ";
@@ -60,8 +63,6 @@ $firstInstall = $cronjob = $isInstalled = false;
 
 $dirname  = "/var/www/cog_git_dependancies";
 $filename = $dirname . "/cog_dependance.json";
-
-$version = "1.6.4";
 $email_message = "";
 
 
@@ -328,7 +329,7 @@ if($hasUpdateNumber > 0) {
 if($argv[1] == "install" && $installed == 0)
   echo( green("Nothing to install.") . "\n");
 
-if($cronjob)
+if($cronjob && ( $canBeCloned > 0 || $hasUpdateNumber > 0 ))
   mail($repos->email, 'Dependancies report', $email_message);
 
 echo("\n");
